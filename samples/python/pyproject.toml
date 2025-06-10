@@ -36,6 +36,7 @@ members = [
     "agents/ag2",
     "agents/extended_agent_card_adk",
     "agents/veo_video_gen",
+    "agents/dice_agent_grpc",
 ]
 
 [tool.uv.sources]
