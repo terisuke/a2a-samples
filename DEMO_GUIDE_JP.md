@@ -217,6 +217,13 @@ PYTHONPATH=../../samples/python:$PYTHONPATH uv run main.py
    # プロセスIDを確認してkill
    kill -9 [プロセスID]
    ```
+## Multiagent Orchestrator Hostの起動方法
+
+```
+cd /samples/python
+
+uv run -m hosts.multiagent.host_agent
+```
 
 2. **エージェントを起動**（別々のターミナルで）：
    ```bash
