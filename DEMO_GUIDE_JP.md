@@ -191,16 +191,62 @@ uv run . --agent http://localhost:10000
 uv run . --agent http://localhost:10000 --agent http://localhost:10003
 ```
 
-#### 2. Multiagent Orchestrator Host
+#### 2. Multiagent Orchestrator Host（デモUIに統合）
 
-Google ADKベースの高度なHost Agent：
+Google ADKベースの高度なHost Agentは、デモUI内に統合されています：
 
 ```bash
-cd samples/python/hosts/multiagent
+# デモUIを起動（Host Agent機能込み）
+cd demo/ui
 uv sync
 echo "GOOGLE_API_KEY=あなたのAPIキー" > .env
-uv run host_agent.py
+PYTHONPATH=../../samples/python:$PYTHONPATH uv run main.py
+# http://localhost:12000 でアクセス
 ```
+
+注意：multiagent hostは単独では実行できません。デモUIの一部として動作します。
+
+##### デモUIの停止と再起動方法
+
+1. **現在のデモUIを停止**：
+   - ターミナルでCtrl+Cを押してUIを停止
+   - またはプロセスを強制終了：
+   ```bash
+   # ポート12000を使用しているプロセスを確認
+   lsof -i :12000
+   # プロセスIDを確認してkill
+   kill -9 [プロセスID]
+   ```
+
+2. **エージェントを起動**（別々のターミナルで）：
+   ```bash
+   # ターミナル1: Currency Agent
+   cd samples/python/agents/langgraph
+   uv sync
+   echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
+   uv run app
+   
+   # ターミナル2: Facts Agent
+   cd samples/python/agents/adk_facts
+   uv sync
+   echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
+   uv run . --port 10003
+   ```
+
+3. **デモUIを再起動**（Host Agent機能込み）：
+   ```bash
+   cd demo/ui
+   echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
+   PYTHONPATH=../../samples/python:$PYTHONPATH uv run main.py
+   ```
+
+4. **エージェントを登録**：
+   - ブラウザで http://localhost:12000/agents にアクセス
+   - 以下のエージェントを追加：
+     - `localhost:10000` (Currency Agent)
+     - `localhost:10003` (Facts Agent)
+
+これで、Multiagent Orchestrator Hostが複数のエージェントと連携できるようになります。
 
 #### 3. 特定用途のHost Agent（例：旅行プランナー）
 
