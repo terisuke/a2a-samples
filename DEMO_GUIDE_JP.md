@@ -119,6 +119,7 @@ cd samples/python/agents/adk_facts
 uv sync
 echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
 uv run python __main__.py --port 10003
+uv run . --port 10003
 ```
 
 Windowsの場合（PowerShell）：
@@ -136,12 +137,14 @@ uv run python __main__.py --port 10003
 Mac/Linuxの場合：
 ```bash
 cd demo/ui
+echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
 PYTHONPATH=../../samples/python:$PYTHONPATH uv run main.py
 ```
 
 Windowsの場合（PowerShell）：
 ```powershell
 cd demo\ui
+echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
 $env:PYTHONPATH = "..\..\samples\python;$env:PYTHONPATH"
 uv run main.py
 ```
@@ -169,6 +172,58 @@ uv run main.py
 - **自動連携（エージェント登録後）**: Host Agentが適切なエージェントを自動選択
 
 Host Agent機能を使うと、「日本の観光地の入場料をユーロで教えて」のような複合的な質問に対して、自動的に複数のエージェントが連携して回答します。
+
+### 🖥️ スタンドアロンHost Agentの起動方法
+
+デモUI以外にも、独立したHost Agentを起動する方法がいくつかあります：
+
+#### 1. CLI Host Agent（最も簡単）
+
+コマンドライン上で動作するシンプルなHost Agent：
+
+```bash
+# Host Agentの起動（任意のA2Aエージェントに接続）
+cd samples/python/hosts/cli
+uv sync
+uv run . --agent http://localhost:10000
+
+# 複数のエージェントに接続する場合
+uv run . --agent http://localhost:10000 --agent http://localhost:10003
+```
+
+#### 2. Multiagent Orchestrator Host
+
+Google ADKベースの高度なHost Agent：
+
+```bash
+cd samples/python/hosts/multiagent
+uv sync
+echo "GOOGLE_API_KEY=あなたのAPIキー" > .env
+uv run host_agent.py
+```
+
+#### 3. 特定用途のHost Agent（例：旅行プランナー）
+
+Airbnb検索と天気情報を組み合わせた旅行プランナー：
+
+```bash
+# 必要なエージェントを起動
+# ターミナル1: 天気エージェント
+cd samples/python/agents/airbnb_planner_multiagent/weather_agent
+uv sync
+uv run .
+
+# ターミナル2: Airbnbエージェント
+cd samples/python/agents/airbnb_planner_multiagent/airbnb_agent
+uv sync
+uv run .
+
+# ターミナル3: Host Agent（Gradio UI付き）
+cd samples/python/agents/airbnb_planner_multiagent/host_agent
+uv sync
+uv run .
+# http://localhost:8083 でアクセス
+```
 
 ### 💬 使い方
 
