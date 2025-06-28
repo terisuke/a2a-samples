@@ -8,6 +8,11 @@
 2. **Python 3.12以上** がインストールされていること
 3. **Google Gemini API キー** (無料で取得可能)
 
+### Windows環境の推奨事項
+- **PowerShell** または **Windows Terminal** の使用を推奨
+- **Git for Windows** がインストールされていること
+- コマンドプロンプトよりPowerShellの方が扱いやすいです
+
 ## APIキーの取得方法
 
 ### Google Gemini API キー（無料枠あり）
@@ -46,16 +51,24 @@ Google Gemini API無料枠のみを使った最小構成で始める場合は、
 ターミナル（コマンドプロンプト）を開いて以下を実行：
 
 ```bash
-git clone https://github.com/googlesamples/a2a-samples.git
+git clone https://github.com/terisuke/a2a-samples.git
 cd a2a-samples
 ```
 
 ### 2. uvツールをインストール
 
+#### Mac/Linuxの場合：
 ```bash
-# まだインストールしていない場合
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
+#### Windowsの場合：
+```powershell
+# PowerShellを管理者として実行
+irm https://astral.sh/uv/install.ps1 | iex
+```
+
+または、[uv公式サイト](https://github.com/astral-sh/uv)から直接ダウンロード
 
 ### 3. Google Gemini APIキーを取得
 
@@ -81,6 +94,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 #### ステップ1: 各エージェントを起動
 
 **ターミナル1: LangGraph Currency Agent（通貨変換）**
+
+Mac/Linuxの場合：
 ```bash
 cd samples/python/agents/langgraph
 uv sync
@@ -88,9 +103,27 @@ echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
 uv run app
 ```
 
+Windowsの場合（PowerShell）：
+```powershell
+cd samples\python\agents\langgraph
+uv sync
+echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
+uv run app
+```
+
 **ターミナル2: ADK Facts Agent（情報収集）**
+
+Mac/Linuxの場合：
 ```bash
 cd samples/python/agents/adk_facts
+uv sync
+echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
+uv run python __main__.py --port 10003
+```
+
+Windowsの場合（PowerShell）：
+```powershell
+cd samples\python\agents\adk_facts
 uv sync
 echo "GOOGLE_API_KEY=あなたのGemini APIキー" > .env
 uv run python __main__.py --port 10003
@@ -99,9 +132,25 @@ uv run python __main__.py --port 10003
 #### ステップ2: デモUIを起動
 
 **ターミナル3: デモUI**
+
+Mac/Linuxの場合：
 ```bash
 cd demo/ui
 PYTHONPATH=../../samples/python:$PYTHONPATH uv run main.py
+```
+
+Windowsの場合（PowerShell）：
+```powershell
+cd demo\ui
+$env:PYTHONPATH = "..\..\samples\python;$env:PYTHONPATH"
+uv run main.py
+```
+
+Windowsの場合（コマンドプロンプト）：
+```cmd
+cd demo\ui
+set PYTHONPATH=..\..\samples\python;%PYTHONPATH%
+uv run main.py
 ```
 
 #### ステップ3: エージェントを登録
@@ -153,16 +202,27 @@ Host Agent機能を使うと、「日本の観光地の入場料をユーロで�
 #### エージェントがデモUIに表示されない場合
 
 1. エージェントが正常に起動しているか確認：
+   
+   Mac/Linuxの場合：
    ```bash
    curl http://localhost:10000/.well-known/agent.json
    curl http://localhost:10003/.well-known/agent.json
    ```
+   
+   Windowsの場合（PowerShell）：
+   ```powershell
+   Invoke-WebRequest -Uri http://localhost:10000/.well-known/agent.json
+   Invoke-WebRequest -Uri http://localhost:10003/.well-known/agent.json
+   ```
+
 2. `http://localhost:12000/agents` でエージェントを手動登録
 
 #### Facts Agentが "I do not have access to real-time information" と返す場合
 
 - 質問を具体的にする（例：「Tokyo tourist spots」→「interesting facts about Tokyo」）
-- エージェントのログを確認：`tail -f adk_facts_10003.log`
+- エージェントのログを確認：
+  - Mac/Linux: `tail -f adk_facts_10003.log`
+  - Windows (PowerShell): `Get-Content adk_facts_10003.log -Tail 20 -Wait`
 
 #### Currency Agentがエラーを返す場合
 
@@ -175,6 +235,22 @@ Host Agent機能を使うと、「日本の観光地の入場料をユーロで�
 # 別のポートで起動
 uv run app --port 10004  # Currency Agent用
 uv run python __main__.py --port 10005  # Facts Agent用
+```
+
+#### Windows固有の問題
+
+##### PowerShellで実行ポリシーエラーが出る場合
+
+```powershell
+# 管理者権限でPowerShellを開いて実行
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+##### 文字化けが発生する場合
+
+```powershell
+# UTF-8エンコーディングを設定
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 ```
 
 ### 🎯 Host Agent連携の実例
@@ -198,7 +274,14 @@ uv run python __main__.py --port 10005  # Facts Agent用
 
 ```bash
 # HelloWorld Agent（シンプルな応答）
+# Mac/Linux
 cd samples/python/agents/helloworld
+uv sync
+echo "GOOGLE_API_KEY=あなたのAPIキー" > .env
+uv run app
+
+# Windows (PowerShell)
+cd samples\python\agents\helloworld
 uv sync
 echo "GOOGLE_API_KEY=あなたのAPIキー" > .env
 uv run app
@@ -222,9 +305,11 @@ uv run app
 
 - [A2Aプロトコル仕様](https://google.github.io/agent-to-agent-protocol/)
 - [Google Gemini API](https://ai.google.dev/)
-- [サンプルコード](https://github.com/googlesamples/a2a-samples)
+- [サンプルコード（オリジナル）](https://github.com/googlesamples/a2a-samples)
+- [このガイド用のリポジトリ](https://github.com/terisuke/a2a-samples)
 
 ## 🆘 サポート
 
 問題が解決しない場合は、GitHubのIssuesで質問してください：
-https://github.com/googlesamples/a2a-samples/issues
+- [このガイドに関する問題](https://github.com/terisuke/a2a-samples/issues)
+- [A2Aサンプル全般の問題](https://github.com/googlesamples/a2a-samples/issues)
